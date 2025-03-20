@@ -1,44 +1,64 @@
 import React, { useState } from 'react';
-import Friend_card from '../components/card/Friend_card';
-import Sidebar from '../components/sidebar/Sidebar';
+import { FaInbox, FaStar, FaArchive } from 'react-icons/fa';
+import FriendCard from '../components/card/Friend_card'
+import Sidebar from '../components/sidebar/Sidebar'
+import ChatBox from '../components/chatbox/ChatBox';
 
 const Message = () => {
+    const categories = [
+        { name: "Tout", icon: <FaInbox /> },
+        { name: "Archived", icon: <FaArchive /> },
+        { name: "Starred", icon: <FaStar /> }
+    ];
+    const [activeTab, setActiveTab] = useState("Tout");
 
     return (
-        <>
-            <div className='p-4'>
-                <div className='flex bg-slate-50'>
+        <div className='flex justify-between bg-gray-100 min-h-screen'>
+            <div className='flex'>
+                <div className='flex flex-col  p-4 w-[18vw]'>
+                    <h1 className='font-semibold text-2xl mb-4'>Messages</h1>
 
-                    <Sidebar />
-                    <div className='w-fit h-screen  p-4'>
+                    {/* Tabs de filtres */}
+                    <ul className="p-4 font-semibold  flex justify-between w-[18vw]">
+                        {categories.map((category) => (
+                            <li key={category.name}>
+                                <button
+                                    className={`flex items-center space-x-2 px-3 py-2 rounded ${activeTab === category.name ? "bg-blue-600 text-white" : "hover:bg-gray-200"
+                                        }`}
+                                    onClick={() => setActiveTab(category.name)}
+                                >
+                                    {category.icon} <span>{category.name}</span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
 
-                        {/* <Sidebar></Sidebar> */}
 
-                        <h1 className='font-semibold text-2xl mb-4'>Message</h1>
-                        <ul className='p-4 font-semibold w-screen flex justify-between lg:w-[18vw]  '>
-                            <li><button>Tout</button></li>
-                            <li><button>Archived</button></li>
-                            <li><button>Starred</button></li>
-                        </ul>
-                        <h3 className='m-4 text-xl'>GROUPES</h3>
-                        <div className='overflow-y-scroll mt-8 lg:w-[18vw] h-[20vh]'>
-                            <Friend_card />
-                            <Friend_card />
-                            <Friend_card />
-                        </div>
-                        <h3 className='m-4'>PERSONNAL</h3>
-                        <div className=' mt-8 lg:w-[18vw] h-[20vh]'>
-                            <Friend_card />
-                            <Friend_card />
-                            <Friend_card />
-                            <Friend_card />
-                            <Friend_card />
-                        </div>
+                    {/* Liste des groupes */}
+                    <h3 className='mt-6 text-xl font-semibold'>Groupes</h3>
+                    <div className='overflow-auto max-h-40 w-[18vw] space-y-2'>
+                        <FriendCard />
+                        <FriendCard />
+                        <FriendCard />
+                    </div>
+
+                    {/* Liste des messages personnels */}
+                    <h3 className='mt-6 text-xl font-semibold'>Personnel</h3>
+                    <div className='overflow-auto max-h-60 space-y-2 w-[18vw]'>
+                        <FriendCard />
+                        <FriendCard />
+                        <FriendCard />
+                        <FriendCard />
+                        <FriendCard />
                     </div>
                 </div>
             </div>
-        </>
 
+            <div className="p-4 w-[50vw]">
+                <ChatBox user={{ name: "Jean Dupont" }} />
+            </div>
+            
+        </div>
     );
 };
 

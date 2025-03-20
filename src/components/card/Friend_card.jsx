@@ -1,24 +1,25 @@
-import React from 'react'
+import React from 'react';
+import { FaCircle } from 'react-icons/fa';
 
-function Friend_card(props) {
-  return (
-    <>
-        <div className='flex justify-between items-center w-full hover:bg-[rgba(255,255,255,0.7)] rounded p-2 '>
-            <div className='rounded-full border-[1px] size-[50px]  bg-purple-700 relative'>
-                <div className='absolute bottom-0 size-3 border-red-500 border-[4px] right-0 rounded-full'></div>
-                <img src="" className='object-cover ' alt="" />
+const FriendCard = () => {
+    return (
+        <div className='flex items-center p-3  rounded-lg  hover:bg-gray-200 transition'>
+            {/* Avatar */}
+            <div className='relative w-12 h-12 rounded-full bg-blue-700 flex items-center justify-center text-white'>
+                <img src="" alt="User" className='w-full h-full rounded-full object-cover' />
+                <FaCircle className='absolute bottom-0 right-0 text-green-500' size={12} />
+            </div>
 
+            {/* Infos utilisateur */}
+            <div className='ml-3 flex-grow'>
+                <h3 className='text-md font-semibold'>Vladimir Poutine</h3>
+                <p className='text-sm text-gray-500'>Opération Cake 2...</p>
             </div>
-            <div className='text-[14px]'>
-                <h3 className=''>Vladmir poutine</h3>
-                <p className='font-bold'>Opération cake 2....</p>
-            </div>
-            <div>
-                <span className='text-[10px] text-slate-400'>20 hours ago</span>
-            </div>
+
+            {/* Heure */}
+            <span className='text-xs text-gray-400'>20h</span>
         </div>
-    </>
-  )
-}
+    );
+};
 
-export default Friend_card
+export default FriendCard;
