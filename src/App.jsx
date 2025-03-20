@@ -4,12 +4,12 @@ import Login from './other/Login';
 import Home from './other/Home';
 import Sign from './other/Sign';
 import Message from './other/Message';
-import Sidebar from './components/sidebar/Sidebar';
-import { SidebarProvider } from './context/Sidebarcontext'; // Vérifie bien le chemin
+import Sidebar from './components/sidebar/Navbar';
+import { NavbarProvider } from './context/NavbarContext'; // Vérifie bien le chemin
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter> 
       <Routes>
         {/* Routes sans contexte */}
         <Route path="/Sign" element={<Sign />} />
@@ -19,7 +19,7 @@ export default function App() {
         <Route
           path="/*"
           element={
-            <SidebarProvider>
+            <NavbarProvider>
               <div className="flex">
                 <Sidebar />
                 <div className="flex-1">
@@ -30,7 +30,7 @@ export default function App() {
                   </Routes>
                 </div>
               </div>
-            </SidebarProvider>
+            </NavbarProvider>
           }
         />
       </Routes>
