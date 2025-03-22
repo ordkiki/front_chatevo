@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Importer useNavigate
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 function Login() {
-    // console.log(apiUrl);
-    
+    const navigate = useNavigate(); // Utiliser useNavigate pour la redirection
     const [formData, setFormData] = useState({
         Email: '',
         Mdp: '',
@@ -35,8 +35,12 @@ function Login() {
                 }
             );
             console.log('Réponse du serveur :', response.data);
+            localStorage.setItem('user', JSON.stringify(response.data));
+
             alert("Connexion réussie");
-            setError(null); // Réinitialiser les erreurs si la connexion réussit
+
+            // Rediriger vers la page d'accueil après une connexion réussie
+            navigate('/');
         } catch (error) {
             setError("Échec de la connexion. Vérifiez vos informations.");
             console.error("Connexion échouée :", error);

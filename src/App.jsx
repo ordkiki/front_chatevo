@@ -4,7 +4,7 @@ import Login from './other/Login';
 import Home from './other/Home';
 import Sign from './other/Sign';
 import Message from './other/Message';
-import Sidebar from './components/sidebar/Navbar';
+import Navbar from './components/Navbar/Navbar';
 import { NavbarProvider } from './context/NavbarContext'; // Vérifie bien le chemin
 
 export default function App() {
@@ -21,7 +21,7 @@ export default function App() {
           element={
             <NavbarProvider>
               <div className="flex">
-                <Sidebar />
+                <Navbar />
                 <div className="flex-1">
                   <Routes>
                     <Route path="/" element={<Message />} />
