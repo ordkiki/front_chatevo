@@ -26,7 +26,7 @@ function Sign() {
         
         try {
             const response = await axios.post(
-                `${apiUrl}/utilisateurs/register`,  // Correction de l'URL
+                `${apiUrl}/api/utilisateurs/register`,  // Correction de l'URL
                 formData,
                 {
                     headers: { 'Content-Type': 'application/json' },

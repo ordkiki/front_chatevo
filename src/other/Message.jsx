@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-
 const Message = () => {
     const navigate = useNavigate();
     const [userConnected, setUserConnected] = useState(null);
@@ -24,34 +23,22 @@ const Message = () => {
         { id: 3, name: "Starred", icon: <FaStar /> }
     ];
 
-
+    // Charger les infos utilisateur connecté (mock temporaire)
     useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-            try {
-                const user = JSON.parse(userData);
-                setUserConnected(user.data.utilisateur);
-                // console.log("Utilisateur connecté :", user);
-            } catch (error) {
-                console.error("Erreur lors du parsing des données utilisateur :", error);
-            }
-        } else {
-            console.log("Aucun utilisateur connecté");
-            navigate("/login");
-        }
-    }, [navigate]);
+        const user = JSON.parse(localStorage.getItem('userConnected')) || { Id: 1, Nom: "Vous" }; // adapte selon ton auth
+        setUserConnected(user);
+    }, []);
+
     // Charger la liste des utilisateurs
     useEffect(() => {
         const fetchFriends = async () => {
             try {
-                const res = await axios.get(`${apiUrl}/utilisateurs/listes`);
-                console.log("Données reçues :", res.data.data); // Vérifiez les données reçues
+                const res = await axios.get(`${apiUrl}/api/utilisateurs/listes`);
                 setListeAmis(res.data.data);
             } catch (error) {
                 console.error("Erreur lors du chargement des utilisateurs :", error);
             }
         };
-
         fetchFriends();
     }, []);
 
@@ -59,50 +46,63 @@ const Message = () => {
     useEffect(() => {
         const newSocket = io(`${apiUrl}`);
         setSocket(newSocket);
-
         return () => newSocket.disconnect();
     }, []);
 
-    // Écoute des messages entrants
+    // Rejoindre le chat sélectionné
     useEffect(() => {
-        if (socket) {
-            socket.on('receiveMessage', (newMessage) => {
-                setMessages((prevMessages) => [...prevMessages, newMessage]);
-            });
-        }
-    }, [socket]);
+        const fetchMessagesAndJoinRoom = async () => {
+            if (!selectedFriend || !socket) return;
 
-    // Charger les messages quand on sélectionne un ami
-    useEffect(() => {
-        const fetchMessages = async () => {
-            if (!selectedFriend) return;
+            // Rejoindre la room
+            socket.emit('joinChat', selectedFriend.Id);
+
             try {
-                const res = await axios.get(`${apiUrl}/messages/${selectedFriend.id}`);
+                const res = await axios.get(`${apiUrl}/api/chats/${selectedFriend.Id}`);
                 setMessages(res.data);
             } catch (err) {
                 console.error("Erreur chargement messages :", err);
             }
         };
 
-        fetchMessages();
-    }, [selectedFriend]);
+        fetchMessagesAndJoinRoom();
+    }, [selectedFriend, socket]);
+
+    // Écoute des messages entrants
+    useEffect(() => {
+        if (socket) {
+            socket.on('receiveMessage', (newMessage) => {
+                setMessages((prev) => [...prev, newMessage]);
+            });
+        }
+    }, [socket]);
 
     // Envoyer un message
-    const sendMessage = () => {
-        if (message.trim() && selectedFriend && socket) {
+    const sendMessage = async () => {
+        if (message.trim() && selectedFriend) {
             const newMessage = {
-                sender: 'Vous',
-                content: message,
-                timestamp: new Date().toLocaleTimeString(),
+                Chat_id: selectedFriend.Id,
+                Expediteur: userConnected?.Id,
+                Contenu: message,
+                Type: 'texte'
             };
 
-            socket.emit('sendMessage', {
-                chatId: selectedFriend.id,
-                message: newMessage,
-            });
+            try {
+                const res = await axios.post(`${apiUrl}/api/messages`, newMessage);
 
-            setMessages((prevMessages) => [...prevMessages, newMessage]);
-            setMessage('');
+                if (res.data.success) {
+                    const savedMessage = res.data.data;
+                    setMessages((prev) => [...prev, savedMessage]);
+
+                    // Envoyer aussi via socket
+                    socket.emit('sendMessage', savedMessage);
+                    setMessage('');
+                } else {
+                    console.error('Échec enregistrement message');
+                }
+            } catch (error) {
+                console.error("Erreur d'envoi :", error);
+            }
         }
     };
 
@@ -146,7 +146,7 @@ const Message = () => {
                 </div>
             </div>
 
-            {/* Chat Area */}
+            {/* Zone de chat */}
             <div className='border rounded-lg flex justify-center items-center p-4 w-full lg:w-[78vw] min-h-[90vh] mt-4 lg:mt-0'>
                 <div className='w-full h-full p-2'>
                     {selectedFriend ? (
@@ -163,16 +163,18 @@ const Message = () => {
                                     <div
                                         key={index}
                                         className={`p-3 rounded-lg max-w-full md:max-w-[70%] ${
-                                            msg.sender === 'Vous' ? 'bg-orange-400 text-white self-end' : 'bg-gray-200 self-start'
+                                            msg.Expediteur === userConnected?.Id ? 'bg-orange-400 text-white self-end' : 'bg-gray-200 self-start'
                                         }`}
                                     >
-                                        {msg.content}
-                                        <span className='block text-xs text-gray-500 mt-1'>{msg.timestamp}</span>
+                                        {msg.Contenu}
+                                        <span className='block text-xs text-gray-500 mt-1'>
+                                            {msg.Timestamp || ''}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
 
-                            {/* Zone de saisie */}
+                            {/* Saisie */}
                             <div className='border-t p-2 flex'>
                                 <input
                                     type="text"
@@ -180,7 +182,7 @@ const Message = () => {
                                     className='w-full p-2 border rounded-lg'
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                                 />
                                 <button
                                     className='ml-2 bg-purple-400 text-white px-4 py-2 rounded-lg'
